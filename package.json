@@ -1,0 +1,23 @@
+{
+  "name": "Building-frameworks-with-Typescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mustafiz-rahman/Building-frameworks-with-Typescript.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mustafiz-rahman/Building-frameworks-with-Typescript/issues"
+  },
+  "homepage": "https://github.com/mustafiz-rahman/Building-frameworks-with-Typescript#readme",
+  "devDependencies": {
+    "typescript": "^4.4.3"
+  }
+}
