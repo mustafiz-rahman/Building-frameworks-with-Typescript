@@ -117,7 +117,38 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"src/models/Eventing.ts":[function(require,module,exports) {
+})({"src/models/Attributes.ts":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Attributes = void 0;
+
+var Attributes = function () {
+  function Attributes(data) {
+    var _this = this;
+
+    this.data = data;
+
+    this.get = function (key) {
+      return _this.data[key];
+    };
+  }
+
+  Attributes.prototype.set = function (updateInfo) {
+    Object.assign(this.data, updateInfo);
+  };
+
+  Attributes.prototype.getAll = function () {
+    return this.data;
+  };
+
+  return Attributes;
+}();
+
+exports.Attributes = Attributes;
+},{}],"src/models/Eventing.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -127,26 +158,28 @@ exports.Eventing = void 0;
 
 var Eventing = function () {
   function Eventing() {
+    var _this = this;
+
     this.events = {};
+
+    this.on = function (eventName, callback) {
+      var handlers = _this.events[eventName] || [];
+      handlers.push(callback);
+      _this.events[eventName] = handlers;
+    };
+
+    this.trigger = function (eventName) {
+      var handelers = _this.events[eventName];
+
+      if (!handelers || handelers.length === 0) {
+        return;
+      }
+
+      handelers.forEach(function (callback) {
+        callback();
+      });
+    };
   }
-
-  Eventing.prototype.on = function (eventName, callback) {
-    var handlers = this.events[eventName] || [];
-    handlers.push(callback);
-    this.events[eventName] = handlers;
-  };
-
-  Eventing.prototype.trigger = function (eventName) {
-    var handelers = this.events[eventName];
-
-    if (!handelers || handelers.length === 0) {
-      return;
-    }
-
-    handelers.forEach(function (callback) {
-      callback();
-    });
-  };
 
   return Eventing;
 }();
@@ -2269,7 +2302,7 @@ var Sync = function () {
     this.rootUrl = rootUrl;
   }
 
-  Sync.prototype.fetch = function (id, data) {
+  Sync.prototype.fetch = function (id) {
     return axios_1.default.get(this.rootUrl + "/" + id);
   };
 
@@ -2297,6 +2330,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.User = void 0;
 
+var Attributes_1 = require("./Attributes");
+
 var Eventing_1 = require("./Eventing");
 
 var Sync_1 = require("./Sync");
@@ -2304,25 +2339,68 @@ var Sync_1 = require("./Sync");
 var rootUrl = "http://localhost:3000/users";
 
 var User = function () {
-  function User(data) {
-    this.data = data;
+  function User(attrs) {
     this.events = new Eventing_1.Eventing();
     this.sync = new Sync_1.Sync(rootUrl);
+    this.attribute = new Attributes_1.Attributes(attrs);
   }
 
-  User.prototype.get = function (propName) {
-    return this.data[propName];
+  Object.defineProperty(User.prototype, "on", {
+    get: function get() {
+      return this.events.on;
+    },
+    enumerable: false,
+    configurable: true
+  });
+  Object.defineProperty(User.prototype, "trigger", {
+    get: function get() {
+      return this.events.trigger;
+    },
+    enumerable: false,
+    configurable: true
+  });
+  Object.defineProperty(User.prototype, "get", {
+    get: function get() {
+      return this.attribute.get;
+    },
+    enumerable: false,
+    configurable: true
+  });
+
+  User.prototype.set = function (update) {
+    this.attribute.set(update);
+    this.events.trigger('change');
   };
 
-  User.prototype.set = function (updateInfo) {
-    Object.assign(this.data, updateInfo);
+  User.prototype.fetch = function () {
+    var _this = this;
+
+    var id = this.attribute.get('id');
+
+    if (typeof id !== 'number') {
+      throw new Error('Cant fetch');
+    }
+
+    this.sync.fetch(id).then(function (res) {
+      _this.attribute.set(res.data);
+    });
+  };
+
+  User.prototype.save = function () {
+    var _this = this;
+
+    this.sync.save(this.attribute.getAll()).then(function (res) {
+      _this.trigger('Save');
+    }).catch(function () {
+      _this.trigger('erroe');
+    });
   };
 
   return User;
 }();
 
 exports.User = User;
-},{"./Eventing":"src/models/Eventing.ts","./Sync":"src/models/Sync.ts"}],"src/index.ts":[function(require,module,exports) {
+},{"./Attributes":"src/models/Attributes.ts","./Eventing":"src/models/Eventing.ts","./Sync":"src/models/Sync.ts"}],"src/index.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2332,8 +2410,12 @@ Object.defineProperty(exports, "__esModule", {
 var User_1 = require("./models/User");
 
 var user = new User_1.User({
-  name: 'Mustafiz',
-  age: 26
+  id: 1,
+  name: 'Rahat',
+  age: 0
+});
+user.on('Save', function () {
+  console.log(user);
 });
 user.save();
 },{"./models/User":"src/models/User.ts"}],"../../../../AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
@@ -2364,7 +2446,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49909" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62764" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
