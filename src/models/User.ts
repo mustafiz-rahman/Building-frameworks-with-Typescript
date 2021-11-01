@@ -50,7 +50,7 @@ export class User {
       this.trigger('Save')
     })
     .catch(()=>{
-      this.trigger('erroe');
+      this.trigger('error');
     });
     
   }
