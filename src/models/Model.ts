@@ -48,9 +48,9 @@ export class Model<T extends HasId>{
         {
           throw new Error('Cant fetch');
         }
-        this.sync.fetch(id).then((res:AxiosResponse):void=>{
-          this.set(res.data);
-        })
+        this.sync.fetch(id).then((res:AxiosResponse):void =>{
+          this.set(res.data)
+        });
       } 
     
       save():void{
